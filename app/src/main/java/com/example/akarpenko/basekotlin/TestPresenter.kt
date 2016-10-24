@@ -14,7 +14,5 @@ interface TestView : FragmentView {
 
 class TestPresenter(override val view: TestView) : BaseFragmentPresenter(view) {
 
-    fun testtest() {
-    }
 
 }
