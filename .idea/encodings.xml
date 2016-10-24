@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/App.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/dialogs/ConfirmDialog.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/dialogs/ErrorDialog.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/dialogs/InfoDialog.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/dialogs/LoadingDialog.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/dialogs/WarningDialog.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/utils/ErrorHandler.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/utils/ForegroundManager.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/utils/Logger.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/utils/RxBus.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/kotlin/com/example/akarpenko/basekotlin/utils/RxUtils.kt" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/app/src/main/res/layout/toolbar.xml" charset="ISO-8859-1" />
+  </component>
+</project>

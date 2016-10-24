@@ -1,0 +1,104 @@
+buildscript {
+    ext.kotlin_version = '1.0.4'
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
+    }
+
+}
+
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+
+    final def BOOLEAN = "boolean"
+    final def TRUE = "true"
+    final def FALSE = "false"
+
+    final def LOGGING_ENABLED = "LOGGING_ENABLED"
+
+    compileSdkVersion 24
+    buildToolsVersion "24.0.3"
+    defaultConfig {
+        applicationId "com.example.akarpenko.basekotlin"
+        minSdkVersion 17
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+
+        debug {
+            buildConfigField BOOLEAN, LOGGING_ENABLED, TRUE
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            buildConfigField BOOLEAN, LOGGING_ENABLED, FALSE
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+
+}
+
+ext {
+    dagger_version = "2.0.2"
+    supportVersion = "24.2.0"
+    okHttpVersion = "3.2.0"
+    retrofitVersion = "2.0.0"
+    services_version = "9.4.0"
+    facebook_version = '4.5'
+    dbflow_version = '3.0.0-beta6'
+    twitter_version = '2.0.1@aar'
+    ext.facebook_version = '4.11.0'
+}
+
+kapt {
+    generateStubs = true
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    testCompile 'junit:junit:4.12'
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // Rx
+    compile('io.reactivex:rxandroid:1.1.0') {
+        exclude group: 'io.reactivex', module: 'rxjava'
+    }
+    compile 'io.reactivex:rxjava:1.1.0'
+    compile('com.jakewharton.rxbinding:rxbinding:0.2.0') {
+        exclude group: 'io.reactivex', module: 'rxjava'
+    }
+    compile('com.tbruyelle.rxpermissions:rxpermissions:0.7.0@aar') {
+        exclude group: 'io.reactivex', module: 'rxjava'
+    }
+
+}
