@@ -6,22 +6,7 @@
     <color name="primary">@color/red_600</color>
     <color name="window_background">@color/grey_50</color>
 
-    <!--ObjectiveState-->
-    <color name="draft">@color/orange_500</color>
-    <color name="inProgress">@color/green_300</color>
-    <color name="overDue">@color/orange_700</color>
-    <color name="toBeDiscussed">@color/cyan_600</color>
-    <color name="fail">@color/red_700</color>
-    <color name="reOpened">@color/yellow_A200</color>
-    <color name="completed">@color/green_700</color>
-    <color name="closed">@color/grey_400</color>
-
-    <!--ObjectivePriority-->
-    <color name="low">@color/green_300</color>
-    <color name="medium">@color/yellow_A200</color>
-    <color name="high">@color/orange_800</color>
-    <color name="urgent">@color/red_700</color>
-
+    <color name="transparent">#00000000</color>
 
     <!--  google palette -->
     <color name="red_50">#FFEBEE</color>

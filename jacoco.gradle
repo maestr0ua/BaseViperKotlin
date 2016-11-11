@@ -1,0 +1,72 @@
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.7.1.201405082137"
+}
+
+project.afterEvaluate {
+    // Grab all build types and product flavors
+    def buildTypes = android.buildTypes.collect { type -> type.name }
+    def productFlavors = android.productFlavors.collect { flavor -> flavor.name }
+
+    // When no product flavors defined, use empty
+    if (!productFlavors) productFlavors.add('')
+
+    productFlavors.each { productFlavorName ->
+        buildTypes.each { buildTypeName ->
+            def sourceName, sourcePath
+            if (!productFlavorName) {
+                sourceName = sourcePath = "${buildTypeName}"
+            } else {
+                sourceName = "${productFlavorName}${buildTypeName.capitalize()}"
+                sourcePath = "${productFlavorName}/${buildTypeName}"
+            }
+            def testTaskName = "test${sourceName.capitalize()}UnitTest"
+
+            // Create coverage task of form 'testFlavorTypeCoverage' depending on 'testFlavorTypeUnitTest'
+            task "${testTaskName}Coverage" (type:JacocoReport, dependsOn: "$testTaskName") {
+                group = "Reporting"
+                description = "Generate Jacoco coverage reports on the ${sourceName.capitalize()} build."
+
+                classDirectories = fileTree(
+                        dir: "${project.buildDir}/intermediates/classes/${sourcePath}",
+                        excludes: ['**/R.class',
+                                   '**/R$*.class',
+                                   '**/*$ViewInjector*.*',
+                                   '**/*$ViewBinder*.*',
+                                   '**/BuildConfig.*',
+                                   '**/Manifest*.*',
+                                   'android/**/*.*',
+                                   '**/realm/**/*.*',
+                                   '**/*Companion.class',
+                                   '**/Lambda$*.class', //Retrolambda
+                                   '**/Lambda.class',
+                                   '**/*Lambda.class',
+                                   '**/*Lambda*.class',
+                                   '**/*Lambda*.*',
+                                   '**/*Builder.*',
+                                   '**/*_MembersInjector.class',  //Dagger2 generated code
+                                   '**/*_MembersInjector*.*',  //Dagger2 generated code
+                                   '**/*_*Factory*.*', //Dagger2 generated code
+                                   '**/*Component*.*', //Dagger2 generated code
+                                   '**/*Module*.*' //Dagger2 generated code
+                        ]
+                )
+
+                def coverageSourceDirs = [
+                        "../app/src/main/kotlin",
+                        "../app/src/$productFlavorName",
+                        "../app/src/$buildTypeName"
+                ]
+                additionalSourceDirs = files(coverageSourceDirs)
+                sourceDirectories = files(coverageSourceDirs)
+                executionData = files("../app/build/jacoco/${testTaskName}.exec")
+
+                reports {
+                    xml.enabled = true
+                    html.enabled = true
+                }
+            }
+        }
+    }
+}

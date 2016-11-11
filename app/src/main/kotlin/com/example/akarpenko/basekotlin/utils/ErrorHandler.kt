@@ -1,28 +1,34 @@
 package com.example.akarpenko.basekotlin.utils
 
-import android.support.annotation.StringRes
+import com.example.akarpenko.basekotlin.base.IBaseView
 import com.example.akarpenko.basekotlin.R
-import com.example.akarpenko.basekotlin.base.Router
+import com.example.akarpenko.basekotlin.domain.repositories.network.RxErrorAdapterFactory
 
 object ErrorHandler {
 
-    @StringRes
-    private val errorRes = R.string.error
-
-
-    private fun parseErrorBody(throwable: Throwable): String? = throwable.message
-
-    fun onLoginError(router: Router, _throwable: Throwable) {
-        handleError(router, _throwable, true)
-    }
-
-    fun onError(router: Router, _throwable: Throwable) {
-        handleError(router, _throwable, false)
-    }
-
-    private fun handleError(router: Router, throwable: Throwable, isLoginError: Boolean) {
+    fun handleError(throwable: Throwable, view: IBaseView) {
         Logger.e(throwable)
-        router.showErrorDialog(errorRes, throwable.message, null)
+        if (throwable is RxErrorAdapterFactory.RetrofitException) {
+            when (throwable.kind) {
+                RxErrorAdapterFactory.Kind.NETWORK -> {
+                    view.showSnackBar(R.string.no_internet_connection)
+                    return
+                }
+                RxErrorAdapterFactory.Kind.HTTP -> {
+                    view.showSnackBar(throwable.message)
+                    return
+                }
+                RxErrorAdapterFactory.Kind.UNEXPECTED -> {
+                    view.showSnackBar(throwable.message)
+                    return
+                }
+            }
+        } else {
+            view.showSnackBar(throwable.message)
+            throwable.printStackTrace()
+        }
+
     }
+
 
 }

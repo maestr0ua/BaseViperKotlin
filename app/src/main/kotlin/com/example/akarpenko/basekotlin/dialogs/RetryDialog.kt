@@ -4,6 +4,5 @@ import com.example.akarpenko.basekotlin.R
 
 class RetryDialog : ConfirmDialog() {
 
-    protected override val layoutResource: Int
-        get() = R.layout.dialog_retry_layout
+    override fun getLayout() = R.layout.dialog_retry_layout
 }

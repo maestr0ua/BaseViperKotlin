@@ -1,7 +1,8 @@
 package com.example.akarpenko.basekotlin
 
-import android.view.View
-import com.example.akarpenko.basekotlin.base.*
+import com.example.akarpenko.basekotlin.base.BaseFragment
+import com.example.akarpenko.basekotlin.dagger.component.ViewComponent
+import javax.inject.Inject
 
 /**
  * Created by akarpenko on 21.10.16.
@@ -9,17 +10,23 @@ import com.example.akarpenko.basekotlin.base.*
 
 class TestFragment : BaseFragment<TestPresenter>(), TestView {
 
-    override val title: Int = 0
-    override val layoutResource: Int = R.layout.fragment_layout
+    override fun getTitle(): Int = R.string.test_title
 
-    override fun initPresenter(): TestPresenter? {
-        return TestPresenter(this)
+    @Inject
+    lateinit var mPresenter: TestPresenter
+
+    override fun inject(component: ViewComponent) {
+        component.inject(this)
     }
 
-    override fun findUI(rootView: View) {
+    override fun getPresenter() = mPresenter
+
+    override fun initUI() {
+        getPresenter().init(this)
     }
 
-    override fun setupUI() {
-    }
+    override fun getLayout() = R.layout.fragment_layout
+
+
 
 }

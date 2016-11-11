@@ -1,118 +1,157 @@
 package com.example.akarpenko.basekotlin.base
 
-import android.content.Context
 import android.content.Intent
-import android.graphics.Point
 import android.os.Bundle
-import android.support.annotation.StringRes
+import android.support.design.widget.Snackbar
+import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.view.ViewTreeObserver
+import android.text.TextUtils
+import com.example.akarpenko.basekotlin.App
 import com.example.akarpenko.basekotlin.R
+import com.example.akarpenko.basekotlin.dagger.component.DaggerViewComponent
+import com.example.akarpenko.basekotlin.dagger.component.ViewComponent
+import com.example.akarpenko.basekotlin.dialogs.LoadingDialog
+import com.example.akarpenko.basekotlin.utils.Logger
+import com.example.akarpenko.basekotlin.utils.findCurrentFragment
+import com.example.akarpenko.basekotlin.utils.hideKeyboard
 
-abstract class BaseActivity<P : BaseActivityPresenter> : AppCompatActivity(), ActivityView {
+/**
+ * Created by alkurop on 10.05.16.
+ */
 
-    var presenter: P? = null
 
-    override var isActivityResumed: Boolean = false
+abstract class BaseActivity<P : BasePresenter<out IBaseView>> : AppCompatActivity(), IBaseView {
 
-    protected abstract fun initPresenter(): P?
+    private var snackBar: Snackbar? = null
+    private var progressDialog: LoadingDialog? = null
+    private var mDialog: BaseDialog<*>? = null
+    private var resumed: Boolean = false
 
-    protected abstract fun findUI()
+    abstract fun getPresenter(): P
 
-    protected abstract val layoutResource: Int
-
-    var toolbar: Toolbar? = null
-
-    protected abstract fun setupUI()
-
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
-        super.onActivityResult(requestCode, resultCode, data)
-        presenter?.onActivityResult(requestCode, resultCode, data)
-    }
+    override fun getFragmentContainer(): Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(getLayout())
 
-        if (layoutResource != 0)
-            setContentView(layoutResource)
-
-        findUI()
-
-        toolbar = findViewById(R.id.toolbar) as Toolbar?
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(true)
-
-        setupUI()
-
-        if (presenter == null) {
-            presenter = initPresenter()
-        }
-        presenter?.onCreateView(savedInstanceState)
-
-        window.decorView.rootView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                window.decorView.rootView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                presenter?.onViewCreated()
-            }
-        })
+        inject(DaggerViewComponent.builder()
+                .build())
+        initUI()
+        getPresenter().onViewCreated()
     }
 
-    override fun onDestroy() {
-        presenter?.onDestroyView()
-        super.onDestroy()
-    }
+    abstract fun inject(component: ViewComponent)
 
     override fun onResume() {
         super.onResume()
-        setToolbarTitle("activity title")
-        isActivityResumed = true
-        presenter?.onResume()
+        resumed = true
+        getPresenter().onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        isActivityResumed = false
-        presenter?.onPause()
+        resumed = false
+        getPresenter().onPause()
     }
 
-    override fun onBackPressed() {
-        presenter?.onBackPressed()
+    override fun onStart() {
+        super.onStart()
+        getPresenter().onStart()
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
+    override fun onStop() {
+        super.onStop()
+        getPresenter().onStop()
+    }
+
+    override fun onDestroy() {
+        getPresenter().onDestroy()
+        super.onDestroy()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?)
+            = super.onSaveInstanceState(getPresenter().saveView(outState))
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if (savedInstanceState != null)
+            getPresenter().restoreView(savedInstanceState)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        getPresenter().onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        getPresenter().onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun setToolbarTitle(textRes: Int) {
+        if (supportActionBar != null && textRes != 0) {
+            supportActionBar!!.setTitle(textRes)
+        }
     }
 
     override fun setToolbarTitle(text: String) {
-        supportActionBar?.title = text
+        if (supportActionBar != null) {
+            supportActionBar!!.title = text
+        }
     }
 
-    override fun setToolbarTitle(@StringRes textRes: Int) {
-        supportActionBar?.setTitle(textRes)
+    override fun onBackPressed() {
+        val fragment = findCurrentFragment(getFragmentContainer())
+        if (!fragment?.onBackPressed()!!) {
+            return
+        }
+        super.onBackPressed()
     }
 
-    override fun finishActivity() {
-        supportFinishAfterTransition()
+    override fun hideProgress() {
+        try {
+            if (progressDialog != null && progressDialog!!.isShowing && !progressDialog!!.isDismiss)
+                progressDialog!!.dismiss()
+        } catch (e: IllegalStateException) {
+            Logger.e(e)
+        }
     }
 
-    override val displaySize: Point
-        get() {
-            val display = windowManager.defaultDisplay
-            val size = Point()
-            display.getSize(size)
-            return size
+    override fun showProgress(message: Int) {
+        hideKeyboard()
+        if (resumed) {
+            if (progressDialog == null) {
+                progressDialog = LoadingDialog()
+            }
+            if (!progressDialog!!.isShowing && App.instance.isForeground)
+                progressDialog!!.show(supportFragmentManager, "")
         }
 
-    override val viewContext: Context
-        get() = this
-
-    override val viewArguments: Bundle
-        get() = intent.extras
-
-    override fun asActivity(): AppCompatActivity {
-        return this
     }
 
+    override fun showDialog(dialog: DialogFragment) {
+        if (dialogResumed()) mDialog?.dismiss()
+        dialog.show(supportFragmentManager, null)
+    }
+
+    override fun hideKeyboard() = (this as AppCompatActivity).hideKeyboard()
+
+    private fun dialogResumed() = !(mDialog?.isVisible ?: false)
+
+    override fun showSnackBar(message: String?, actionTitle: String?, onAction: (() -> Unit)?) {
+        val showWithAction = !TextUtils.isEmpty(actionTitle) && onAction != null
+        val isShowing = snackBar?.isShownOrQueued ?: false
+        if (!isShowing) {
+            snackBar = Snackbar.make(window.decorView.rootView, message ?: "", Snackbar.LENGTH_LONG)
+        }
+        if (showWithAction) {
+            snackBar?.setAction(actionTitle, { onAction?.invoke() })
+        }
+        if (!isShowing) snackBar?.show()
+
+    }
+
+    override fun getActivityContext() = this
 }

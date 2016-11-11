@@ -1,19 +1,22 @@
 package com.example.akarpenko.basekotlin
 
-import android.os.Bundle
-import com.example.akarpenko.basekotlin.base.ActivityView
-import com.example.akarpenko.basekotlin.base.BaseActivityPresenter
+import com.example.akarpenko.basekotlin.base.BasePresenter
+import com.example.akarpenko.basekotlin.base.IBaseView
+import com.example.akarpenko.basekotlin.dagger.component.PresenterComponent
 
 /**
  * Created by akarpenko on 21.10.16.
  */
 
-class MainPresenter(override val view: MainView): BaseActivityPresenter(view) {
+class MainPresenter() : BasePresenter<MainView>() {
 
-    override fun onCreateView(savedInstanceState: Bundle?) {
-        super.onCreateView(savedInstanceState)
+    override fun inject(component: PresenterComponent) {
 
-        router.replaceFragment(TestFragment(), false)
+    }
+
+    override fun onViewCreated() {
+        super.onViewCreated()
+        replaceFragment(TestFragment(), false)
     }
 
     fun test() {
@@ -22,7 +25,7 @@ class MainPresenter(override val view: MainView): BaseActivityPresenter(view) {
 
 }
 
-interface MainView: ActivityView {
+interface MainView : IBaseView {
 
     fun test()
 

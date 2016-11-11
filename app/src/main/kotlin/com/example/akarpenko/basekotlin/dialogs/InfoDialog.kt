@@ -2,36 +2,45 @@ package com.example.akarpenko.basekotlin.dialogs
 
 import android.support.annotation.StringRes
 import android.text.TextUtils
-import android.view.View
 import android.widget.TextView
 import com.example.akarpenko.basekotlin.R
+import com.example.akarpenko.basekotlin.base.BaseDialog
+import com.example.akarpenko.basekotlin.base.BasePresenter
+import com.example.akarpenko.basekotlin.base.IBaseView
+import com.example.akarpenko.basekotlin.dagger.component.PresenterComponent
+import com.example.akarpenko.basekotlin.dagger.component.ViewComponent
 import com.example.akarpenko.basekotlin.utils.RxUtils
-import rx.functions.Action1
+import javax.inject.Inject
 
-open class InfoDialog : BaseDialog() {
+open class InfoDialog : BaseDialog<InfoPresenter>() {
 
+    @Inject lateinit var mPresenter: InfoPresenter
     protected lateinit var tvTitle: TextView
     protected lateinit var tvMessage: TextView
     protected lateinit var btnClose: TextView
 
-    @StringRes
-    private var mMessageRes: Int = 0
-    @StringRes
-    private var mTitleRes: Int = 0
+    @StringRes private var mMessageRes: Int = 0
+    @StringRes private var mTitleRes: Int = 0
+
     private var mMessage: String? = null
 
-    private var mListener: View.OnClickListener? = null
+    private var mListener: (() -> Unit)? = null
 
-    protected override val layoutResource: Int = R.layout.dialog_info_layout
+    override fun getLayout() = R.layout.dialog_info_layout
 
-    override fun setupViews(rootView: View) {
+    override fun inject(component: ViewComponent) {
+        component.inject(this)
+    }
+
+    override fun getPresenter() = mPresenter
+
+    override fun initUI() {
         isCancelable = false
-        tvTitle = rootView.findViewById(R.id.tvTitle) as TextView
-        tvMessage = rootView.findViewById(R.id.tvMessage) as TextView
-        btnClose = rootView.findViewById(R.id.btnNegative) as TextView
+        tvTitle = view?.findViewById(R.id.tvTitle) as TextView
+        tvMessage = view?.findViewById(R.id.tvMessage) as TextView
+        btnClose = view?.findViewById(R.id.btnNegative) as TextView
 
-
-        RxUtils.click(btnClose, Action1 { o -> onClick() })
+        RxUtils.click(btnClose, { o -> onClick() })
 
         if (mMessageRes != 0)
             tvMessage.text = getString(mMessageRes)
@@ -42,23 +51,33 @@ open class InfoDialog : BaseDialog() {
 
     private fun onClick() {
         dismiss()
-        if (mListener != null) mListener!!.onClick(null)
+        mListener?.invoke()
     }
 
-    override fun setTitle(@StringRes title: Int) {
+    fun setTitle(@StringRes title: Int) {
         if (title != 0)
             mTitleRes = title
     }
 
-    override fun setMessage(title: String?) {
+    fun setMessage(title: String?) {
         mMessage = title
     }
 
-    override fun setMessage(@StringRes text: Int) {
+    fun setMessage(@StringRes text: Int) {
         mMessageRes = text
     }
 
-    override fun setOnPositiveClickListener(listener: View.OnClickListener?) {
-        mListener = listener
+    fun setOnPositiveClickListener(callBack: (() -> Unit)?) {
+        mListener = callBack
     }
+}
+
+
+interface InfoView : IBaseView
+
+class InfoPresenter : BasePresenter<InfoView>() {
+
+    override fun inject(component: PresenterComponent) {
+    }
+
 }

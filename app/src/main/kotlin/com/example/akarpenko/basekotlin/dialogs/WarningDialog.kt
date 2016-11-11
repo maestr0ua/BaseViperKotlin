@@ -7,13 +7,12 @@ class WarningDialog : ConfirmDialog() {
 
     private var isNegativeVisible: Boolean = false
 
-    protected override val layoutResource: Int = R.layout.dialog_warning_layout
+    override fun getLayout() = R.layout.dialog_warning_layout
 
-    override fun setupViews(_rootView: View) {
-        super.setupViews(_rootView)
+    override fun initUI() {
+        super.initUI()
         btnNegative.visibility = if (isNegativeVisible) View.VISIBLE else View.GONE
     }
-
 
     fun setNegativeButtonVisible(isVisible: Boolean) {
         isNegativeVisible = isVisible
